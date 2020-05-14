@@ -2,17 +2,23 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq.Expressions;
+using SFB;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
+using Button = UnityEngine.UI.Button;
 using Debug = UnityEngine.Debug;
+using Slider = UnityEngine.UI.Slider;
 
 public class GameManager : MonoBehaviour {
     
     public Button saveWorldFile;
 
     public int worldSize = 500; // overwritten by file
+    private int diameter;
 
     public GameObject planet;
     public Material selectedMaterial;
@@ -25,7 +31,9 @@ public class GameManager : MonoBehaviour {
 
     public Text jsonDataForCurrentObject;
     
+#pragma warning disable 108,114
     private GameObject camera;
+#pragma warning restore 108,114
     public GameObject radiusPrefab;
     private Vector3 lastMousePosition;
     private List<GameObject> spheres;
@@ -35,6 +43,7 @@ public class GameManager : MonoBehaviour {
     // Start is called before the first frame update
     void Start() {
         camera = Camera.main.gameObject;
+        diameter = worldSize * 2;
         setWorldSize();
         spheres = new List<GameObject>();
     }
@@ -71,14 +80,14 @@ public class GameManager : MonoBehaviour {
             }
             lastMousePosition = Input.mousePosition;
         
-            if (Input.GetAxis("Fire1") >= 0.1f) {
+            if (Input.GetMouseButtonDown(0)) {
                 if (tool == 1) {
                     Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out var hit, Mathf.Infinity);
                     if (hit.collider.gameObject != null) {
                         GameObject newSphere = Instantiate(radiusPrefab, hit.point, new Quaternion());
                         spheres.Add(newSphere);
                         SetActiveObject(newSphere);
-                        SetRadiusForActiveObject((int)Math.Floor(worldSize * 0.1f));
+                        SetRadiusForActiveObject((int)Math.Floor(diameter * 0.1f));
                     }
                 } else if (tool == 2) {
                     Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out var hit, Mathf.Infinity);
@@ -87,6 +96,12 @@ public class GameManager : MonoBehaviour {
                     } catch (Exception e) {
                         Debug.Log("" + e);
                     }
+                }
+            }
+
+            if (activeObject != null) {
+                if (Input.GetButton("Delete")) {
+                    Destroy(activeObject);
                 }
             }
         
@@ -133,6 +148,22 @@ public class GameManager : MonoBehaviour {
         SetRadiusForActiveObject(radius);
     }
 
+    public void SaveInfoToFile() {
+        var outString = "";
+        foreach (var sphere in spheres) {
+            outString += WriteObjectToJson(sphere);
+        }
+        StandaloneFileBrowser.SaveFilePanelAsync("Save File", 
+                                                 "", 
+                                                 "outFile.json", 
+                                                 "", 
+                                                 (string path) => { 
+                                                     if (!string.IsNullOrEmpty(path)) {
+                                                         File.WriteAllText(path, outString);
+                                                     }  
+                                                 });
+    }
+
     public void SetRadiusSliderFromText(String value) {
         try {
             int radius = int.Parse(value);
@@ -144,8 +175,8 @@ public class GameManager : MonoBehaviour {
     }
 
     public void setWorldSize() {
-        planet.transform.localScale = new Vector3(worldSize, worldSize, worldSize);
-        camera.transform.position = new Vector3(0, 0, (float)(-worldSize*1.2));
+        planet.transform.localScale = new Vector3(diameter, diameter, diameter);
+        camera.transform.position = new Vector3(0, 0, (float)(-diameter*1.2));
         camera.transform.rotation = new Quaternion();
     }
 

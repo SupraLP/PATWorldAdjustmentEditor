@@ -20,6 +20,8 @@
       <Path>Logs</Path>
       <Path>Temp</Path>
       <Path>obj</Path>
+      <Path>out_lin</Path>
+      <Path>out_win</Path>
     </explicitExcludes>
   </component>
 </project>
