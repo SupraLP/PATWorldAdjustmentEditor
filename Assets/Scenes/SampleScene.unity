@@ -219,7 +219,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 362435207}
         m_MethodName: SetHeightSliderFromText
-        m_Mode: 1
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -477,7 +477,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 362435207}
         m_MethodName: SetRadiusInputFromSlider
-        m_Mode: 1
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -716,6 +716,7 @@ MonoBehaviour:
   radiusInputText: {fileID: 1177066776}
   heightSlider: {fileID: 1584129112}
   heightInputText: {fileID: 2037421343}
+  jsonDataForCurrentObject: {fileID: 1630668285}
   radiusPrefab: {fileID: 1059547259}
 --- !u!4 &362435208
 Transform:
@@ -1494,7 +1495,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 5000
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -1631,7 +1632,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 362435207}
         m_MethodName: SetRadiusSliderFromText
-        m_Mode: 1
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -2456,7 +2457,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 362435207}
         m_MethodName: SetHeightInputFromSlider
-        m_Mode: 1
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
