@@ -116,26 +116,30 @@ public class GameManager : MonoBehaviour {
         activeObject = active;
         activeObject.GetComponent<MeshRenderer>().material = selectedMaterial;
         WriteObjectToJson(activeObject);
+        SetRadiusForActiveObject((int)activeObject.transform.localScale.x);
+        SetHeightForActiveObject(activeObject.GetComponent<HeightContainer>().height);
     }
 
     private void SetRadiusForActiveObject(int value) {
         activeObject.transform.localScale = new Vector3(value, value, value);
         WriteObjectToJson(activeObject);
+        radiusSlider.SetValueWithoutNotify(value);
+        radiusInputText.text = value.ToString();
     }
 
     private void SetHeightForActiveObject(int value) {
         activeObject.GetComponent<HeightContainer>().height = value;
         WriteObjectToJson(activeObject);
+        heightSlider.SetValueWithoutNotify(value);
+        heightInputText.text = value.ToString();
     }
 
     public void SetHeightInputFromSlider(float value) {
-        heightInputText.text = value.ToString();
         SetHeightForActiveObject((int)value);
     }
 
     public void SetHeightSliderFromText(String value) {
         try {
-            heightSlider.SetValueWithoutNotify(int.Parse(value));
             SetHeightForActiveObject(int.Parse(value));
         } catch (Exception e) {
             Debug.Log("The String was not valid:\n" + e);
@@ -143,9 +147,15 @@ public class GameManager : MonoBehaviour {
     }
 
     public void SetRadiusInputFromSlider(float value) {
-        int radius = (int)value;
-        radiusInputText.text = radius.ToString();
-        SetRadiusForActiveObject(radius);
+        SetRadiusForActiveObject((int)value);
+    }
+
+    public void SetRadiusSliderFromText(String value) {
+        try {
+            SetRadiusForActiveObject(int.Parse(value));
+        } catch (Exception e) {
+            Debug.Log("The String was not valid:\n" + e);
+        }
     }
 
     public void SaveInfoToFile() {
@@ -162,16 +172,6 @@ public class GameManager : MonoBehaviour {
                                                          File.WriteAllText(path, outString);
                                                      }  
                                                  });
-    }
-
-    public void SetRadiusSliderFromText(String value) {
-        try {
-            int radius = int.Parse(value);
-            radiusSlider.SetValueWithoutNotify(radius);
-            SetRadiusForActiveObject(radius);
-        } catch (Exception e) {
-            Debug.Log("The String was not valid:\n" + e);
-        }
     }
 
     public void setWorldSize() {
