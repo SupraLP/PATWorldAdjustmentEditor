@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 using SFB;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using UnityEngine.UIElements;
 using Button = UnityEngine.UI.Button;
 using Debug = UnityEngine.Debug;
 using Slider = UnityEngine.UI.Slider;
@@ -31,21 +31,25 @@ public class GameManager : MonoBehaviour {
 
     public Text jsonDataForCurrentObject;
     
+    public int defaultRadius;
+    public int defaultHeight = 0;
+    
 #pragma warning disable 108,114
     private GameObject camera;
 #pragma warning restore 108,114
     public GameObject radiusPrefab;
     private Vector3 lastMousePosition;
-    private List<GameObject> spheres;
+    private List<HeightAdjustment> heightAdjustments;
     private int tool = 0;
-    private GameObject activeObject;
+    private HeightAdjustment activeObject;
     
     // Start is called before the first frame update
     void Start() {
         camera = Camera.main.gameObject;
         diameter = worldSize * 2;
+        defaultRadius = (int)Math.Floor(diameter * 0.1f);
         setWorldSize();
-        spheres = new List<GameObject>();
+        heightAdjustments = new List<HeightAdjustment>();
     }
 
     public void SelectNoTool() {
@@ -55,16 +59,16 @@ public class GameManager : MonoBehaviour {
     public void SelectPlaceTool() {
         tool = 1;
         planet.layer = LayerMask.NameToLayer("Default");
-        foreach (var sphere in spheres) {
-            sphere.layer = LayerMask.NameToLayer("Ignore Raycast");
+        foreach (var adjustment in heightAdjustments) {
+            adjustment.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
         }
     }
 
     public void SelectSelectTool() {
         tool = 2;
         planet.layer = LayerMask.NameToLayer("Ignore Raycast");
-        foreach (var sphere in spheres) {
-            sphere.layer = LayerMask.NameToLayer("Default");
+        foreach (var adjustment in heightAdjustments) {
+            adjustment.gameObject.layer = LayerMask.NameToLayer("Default");
         }
     }
 
@@ -85,14 +89,17 @@ public class GameManager : MonoBehaviour {
                     Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out var hit, Mathf.Infinity);
                     if (hit.collider.gameObject != null) {
                         GameObject newSphere = Instantiate(radiusPrefab, hit.point, new Quaternion());
-                        spheres.Add(newSphere);
-                        SetActiveObject(newSphere);
-                        SetRadiusForActiveObject((int)Math.Floor(diameter * 0.1f));
+                        var adjustment = newSphere.GetComponent<HeightAdjustment>();
+                        adjustment.Pos = new[]{ (int)hit.point.x, (int)hit.point.y, (int)hit.point.z};
+                        heightAdjustments.Add(adjustment);
+                        SetActiveObject(adjustment);
+                        SetRadiusForActiveObject(defaultRadius);
+                        SetHeightForActiveObject(defaultHeight);
                     }
                 } else if (tool == 2) {
                     Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out var hit, Mathf.Infinity);
                     try {
-                        SetActiveObject(hit.collider.gameObject);
+                        SetActiveObject(hit.collider.gameObject.GetComponent<HeightAdjustment>());
                     } catch (Exception e) {
                         Debug.Log("" + e);
                     }
@@ -109,29 +116,33 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-    private void SetActiveObject(GameObject active) {
+    private void SetActiveObject(HeightAdjustment active) {
         if (activeObject != null) {
             activeObject.GetComponent<MeshRenderer>().material = sphereMaterial;
         }
         activeObject = active;
         activeObject.GetComponent<MeshRenderer>().material = selectedMaterial;
-        WriteObjectToJson(activeObject);
-        SetRadiusForActiveObject((int)activeObject.transform.localScale.x);
-        SetHeightForActiveObject(activeObject.GetComponent<HeightContainer>().height);
+        jsonDataForCurrentObject.text = WriteObjectToJson(activeObject, false);
+        var radius = activeObject.Radius;
+        var height = activeObject.adjustment;
+        SetRadiusForActiveObject(radius);
+        SetHeightForActiveObject(height);
     }
 
     private void SetRadiusForActiveObject(int value) {
-        activeObject.transform.localScale = new Vector3(value, value, value);
-        WriteObjectToJson(activeObject);
+        activeObject.Radius = value;
+        jsonDataForCurrentObject.text = WriteObjectToJson(activeObject, false);
         radiusSlider.SetValueWithoutNotify(value);
         radiusInputText.text = value.ToString();
+        defaultRadius = value;
     }
 
     private void SetHeightForActiveObject(int value) {
-        activeObject.GetComponent<HeightContainer>().height = value;
-        WriteObjectToJson(activeObject);
+        activeObject.adjustment = value;
+        jsonDataForCurrentObject.text = WriteObjectToJson(activeObject, false);
         heightSlider.SetValueWithoutNotify(value);
         heightInputText.text = value.ToString();
+        defaultHeight = value;
     }
 
     public void SetHeightInputFromSlider(float value) {
@@ -159,10 +170,15 @@ public class GameManager : MonoBehaviour {
     }
 
     public void SaveInfoToFile() {
-        var outString = "";
-        foreach (var sphere in spheres) {
-            outString += WriteObjectToJson(sphere);
+        /*var outString = "				\"heightAdjustments\": [\n				    ";
+        for (var index = 0; index < heightAdjustments.Count; index++) {
+            var adjustment = heightAdjustments[index];
+            outString += Regex.Replace(WriteObjectToJson(adjustment, false) + (heightAdjustments.Count-index == 1 ? "" : ",\n"), "\n", "\n					");
         }
+
+        outString += "\n				]";*/
+        var outString = JsonUtility.ToJson(heightAdjustments.ToArray());
+
         StandaloneFileBrowser.SaveFilePanelAsync("Save File", 
                                                  "", 
                                                  "outFile.json", 
@@ -180,18 +196,17 @@ public class GameManager : MonoBehaviour {
         camera.transform.rotation = new Quaternion();
     }
 
-    private String WriteObjectToJson(GameObject sphere) {
-        var position = sphere.transform.position;
-        String outString = "{\n" +
-                           "\t\"adjustment\": " + sphere.GetComponent<HeightContainer>().height + ",\n" +
-                           "\t\"radius\": " + sphere.transform.localScale.x + ",\n" +
-                           "\t\"pos\": [\n" +
-                           "\t\t" + position.x + ",\n" +
-                           "\t\t" + position.y + ",\n" +
-                           "\t\t" + position.z + "\n" +
-                           "\t]\n" +
-                           "}\n";
-        jsonDataForCurrentObject.text = outString;
+    private String WriteObjectToJson(HeightAdjustment heightAdjustment, bool forFinalExport) {
+        /*String outString = (forFinalExport ? "					" : "") + "{\n" +
+                           (forFinalExport ? "					" : "") + "    \"adjustment\": " + heightAdjustment.adjustment + ",\n" +
+                           (forFinalExport ? "					" : "") + "    \"radius\": " + heightAdjustment.radius + ",\n" +
+                           (forFinalExport ? "					" : "") + "    \"pos\": [\n" +
+                           (forFinalExport ? "					" : "") + "        " + heightAdjustment.pos[0] + ",\n" +
+                           (forFinalExport ? "					" : "") + "        " + heightAdjustment.pos[1] + ",\n" +
+                           (forFinalExport ? "					" : "") + "        " + heightAdjustment.pos[2] + "\n" +
+                           (forFinalExport ? "					" : "") + "    ]\n" +
+                           (forFinalExport ? "					" : "") + "}";*/
+        String outString = JsonUtility.ToJson(heightAdjustment, true);
         return outString;
     }
 }
