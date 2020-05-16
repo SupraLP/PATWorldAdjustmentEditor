@@ -76,6 +76,14 @@ public class GameManager : MonoBehaviour {
         }
     }
 
+    public void SelectMoveTool() {
+        tool = 3;
+        planet.layer = LayerMask.NameToLayer("Default");
+        foreach (var adjustment in heightAdjustments) {
+            adjustment.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -94,7 +102,7 @@ public class GameManager : MonoBehaviour {
                     if (hit.collider.gameObject != null) {
                         GameObject newSphere = Instantiate(radiusPrefab, hit.point, new Quaternion());
                         var adjustment = newSphere.GetComponent<HeightAdjustment>();
-                        adjustment.Pos = new[]{ (int)hit.point.x, (int)hit.point.y, (int)hit.point.z};
+                        adjustment.Pos = new []{ (int)hit.point.x, (int)hit.point.y, (int)hit.point.z};
                         heightAdjustments.Add(adjustment);
                         adjustment.adjustment = defaultHeight;
                         adjustment.radius = defaultRadius;
@@ -104,6 +112,16 @@ public class GameManager : MonoBehaviour {
                     Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out var hit, Mathf.Infinity);
                     try {
                         SetActiveObject(hit.collider.gameObject.GetComponent<HeightAdjustment>());
+                    } catch (Exception e) {
+                        Debug.Log("" + e);
+                    }
+                } 
+            }
+            if (Input.GetAxis("Fire1") >= 0.1f) {
+                if (tool == 3) {
+                    Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out var hit, Mathf.Infinity);
+                    try {
+                        activeObject.Pos = new []{ (int)hit.point.x, (int)hit.point.y, (int)hit.point.z};
                     } catch (Exception e) {
                         Debug.Log("" + e);
                     }
