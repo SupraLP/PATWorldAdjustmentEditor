@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -30,6 +30,9 @@ public class GameManager : MonoBehaviour {
     public InputField heightInputText;
 
     public Text jsonDataForCurrentObject;
+
+    public GameObject openDialog;
+    public GameObject radiusPrefab;
     
     public int defaultRadius;
     public int defaultHeight = 0;
@@ -37,11 +40,12 @@ public class GameManager : MonoBehaviour {
 #pragma warning disable 108,114
     private GameObject camera;
 #pragma warning restore 108,114
-    public GameObject radiusPrefab;
     private Vector3 lastMousePosition;
     private List<HeightAdjustment> heightAdjustments;
     private int tool = 0;
     private HeightAdjustment activeObject;
+
+    private string loadedWorldFile;
     
     // Start is called before the first frame update
     void Start() {
@@ -163,6 +167,34 @@ public class GameManager : MonoBehaviour {
             SetRadiusForActiveObject(int.Parse(value));
         } catch (Exception e) {
             Debug.Log("The String was not valid:\n" + e);
+        }
+    }
+
+    public void OpenWorldFile() {
+        StandaloneFileBrowser.OpenFilePanelAsync("Open World File", 
+                                                 "", 
+                                                 "", 
+                                                 false,
+                                                 paths => {
+                                                     if (!string.IsNullOrEmpty(paths[0])) {
+                                                         loadedWorldFile = paths[0];
+                                                     }
+                                                 });
+        var seperatedHeightAdjustments = loadedWorldFile.Substring(loadedWorldFile.IndexOf("\"heightAdjustments\": [", StringComparison.CurrentCulture), 
+                                                                   loadedWorldFile.IndexOf("			}\n        }\n    ]\n}", StringComparison.CurrentCulture) - 
+                                                                   loadedWorldFile.IndexOf("\"heightAdjustments\": [", StringComparison.CurrentCulture));
+        var heightAdjustmentArray = JsonUtility.FromJson<HeightAdjustment[]>(seperatedHeightAdjustments);
+        openDialog.SetActive(true);
+        var dialogResponse = openDialog.GetComponent<DialogBox>().CreateDialog();
+        openDialog.SetActive(false);
+        if (dialogResponse == 1) {
+            foreach (var heightAdjustment in heightAdjustments) {
+                heightAdjustments.Remove(heightAdjustment);
+                Destroy(heightAdjustment.gameObject);
+            }
+            heightAdjustments.AddRange(heightAdjustmentArray);
+        } else if (dialogResponse == 2) {
+            heightAdjustments.AddRange(heightAdjustmentArray);
         }
     }
 

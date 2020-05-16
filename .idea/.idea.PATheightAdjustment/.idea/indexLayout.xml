@@ -10,7 +10,6 @@
       <Path>Library/PackageCache/com.unity.test-framework@1.1.13</Path>
       <Path>Library/PackageCache/com.unity.textmeshpro@2.0.1</Path>
       <Path>Library/PackageCache/com.unity.timeline@1.2.14</Path>
-      <Path>Library/PackageCache/jillejr.newtonsoft.json-for-unity@12.0.301</Path>
       <Path>Packages</Path>
       <Path>ProjectSettings</Path>
     </explicitIncludes>
@@ -22,6 +21,7 @@
       <Path>Temp</Path>
       <Path>obj</Path>
       <Path>out_lin</Path>
+      <Path>out_mac.app</Path>
       <Path>out_win</Path>
     </explicitExcludes>
   </component>
