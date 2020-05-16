@@ -36,6 +36,11 @@ public class GameManager : MonoBehaviour {
     
     public int defaultRadius;
     public int defaultHeight = 0;
+
+    public Image placeToolButton;
+    public Image selectToolButton;
+    public Image moveToolButton;
+    public Image noToolButton;
     
 #pragma warning disable 108,114
     private GameObject camera;
@@ -54,10 +59,15 @@ public class GameManager : MonoBehaviour {
         defaultRadius = (int)Math.Floor(diameter * 0.1f);
         setWorldSize();
         heightAdjustments = new List<HeightAdjustment>();
+        SelectNoTool();
     }
 
     public void SelectNoTool() {
         tool = 0;
+        placeToolButton.color = Color.white;
+        selectToolButton.color = Color.white;
+        moveToolButton.color = Color.white;
+        noToolButton.color = Color.cyan;
     }
 
     public void SelectPlaceTool() {
@@ -66,6 +76,10 @@ public class GameManager : MonoBehaviour {
         foreach (var adjustment in heightAdjustments) {
             adjustment.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
         }
+        placeToolButton.color = Color.cyan;
+        selectToolButton.color = Color.white;
+        moveToolButton.color = Color.white;
+        noToolButton.color = Color.white;
     }
 
     public void SelectSelectTool() {
@@ -74,6 +88,10 @@ public class GameManager : MonoBehaviour {
         foreach (var adjustment in heightAdjustments) {
             adjustment.gameObject.layer = LayerMask.NameToLayer("Default");
         }
+        placeToolButton.color = Color.white;
+        selectToolButton.color = Color.cyan;
+        moveToolButton.color = Color.white;
+        noToolButton.color = Color.white;
     }
 
     public void SelectMoveTool() {
@@ -82,6 +100,10 @@ public class GameManager : MonoBehaviour {
         foreach (var adjustment in heightAdjustments) {
             adjustment.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
         }
+        placeToolButton.color = Color.white;
+        selectToolButton.color = Color.white;
+        moveToolButton.color = Color.cyan;
+        noToolButton.color = Color.white;
     }
 
     // Update is called once per frame

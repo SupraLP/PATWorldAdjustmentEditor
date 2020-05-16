@@ -1164,6 +1164,10 @@ MonoBehaviour:
   radiusPrefab: {fileID: 1059547259}
   defaultRadius: 100
   defaultHeight: 0
+  placeToolButton: {fileID: 1697356115}
+  selectToolButton: {fileID: 1916815539}
+  moveToolButton: {fileID: 1282129504}
+  noToolButton: {fileID: 299916252}
 --- !u!4 &362435208
 Transform:
   m_ObjectHideFlags: 0
