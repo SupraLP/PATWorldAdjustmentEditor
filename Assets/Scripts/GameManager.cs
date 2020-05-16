@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -92,9 +92,9 @@ public class GameManager : MonoBehaviour {
                         var adjustment = newSphere.GetComponent<HeightAdjustment>();
                         adjustment.Pos = new[]{ (int)hit.point.x, (int)hit.point.y, (int)hit.point.z};
                         heightAdjustments.Add(adjustment);
+                        adjustment.adjustment = defaultHeight;
+                        adjustment.radius = defaultRadius;
                         SetActiveObject(adjustment);
-                        SetRadiusForActiveObject(defaultRadius);
-                        SetHeightForActiveObject(defaultHeight);
                     }
                 } else if (tool == 2) {
                     Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out var hit, Mathf.Infinity);
@@ -122,16 +122,13 @@ public class GameManager : MonoBehaviour {
         }
         activeObject = active;
         activeObject.GetComponent<MeshRenderer>().material = selectedMaterial;
-        jsonDataForCurrentObject.text = WriteObjectToJson(activeObject, false);
-        var radius = activeObject.Radius;
-        var height = activeObject.adjustment;
-        SetRadiusForActiveObject(radius);
-        SetHeightForActiveObject(height);
+        SetRadiusForActiveObject(activeObject.radius);
+        SetHeightForActiveObject(activeObject.adjustment);
     }
 
     private void SetRadiusForActiveObject(int value) {
         activeObject.Radius = value;
-        jsonDataForCurrentObject.text = WriteObjectToJson(activeObject, false);
+        jsonDataForCurrentObject.text = WriteObjectToJson(activeObject);
         radiusSlider.SetValueWithoutNotify(value);
         radiusInputText.text = value.ToString();
         defaultRadius = value;
@@ -139,7 +136,7 @@ public class GameManager : MonoBehaviour {
 
     private void SetHeightForActiveObject(int value) {
         activeObject.adjustment = value;
-        jsonDataForCurrentObject.text = WriteObjectToJson(activeObject, false);
+        jsonDataForCurrentObject.text = WriteObjectToJson(activeObject);
         heightSlider.SetValueWithoutNotify(value);
         heightInputText.text = value.ToString();
         defaultHeight = value;
@@ -170,14 +167,14 @@ public class GameManager : MonoBehaviour {
     }
 
     public void SaveInfoToFile() {
-        /*var outString = "				\"heightAdjustments\": [\n				    ";
+        var outString = "				\"heightAdjustments\": [\n				    ";
         for (var index = 0; index < heightAdjustments.Count; index++) {
             var adjustment = heightAdjustments[index];
-            outString += Regex.Replace(WriteObjectToJson(adjustment, false) + (heightAdjustments.Count-index == 1 ? "" : ",\n"), "\n", "\n					");
+            outString += Regex.Replace(WriteObjectToJson(adjustment) + (heightAdjustments.Count-index == 1 ? "" : ",\n"), "\n", "\n					");
         }
 
-        outString += "\n				]";*/
-        var outString = JsonUtility.ToJson(heightAdjustments.ToArray());
+        outString += "\n				]";
+        //var outString = JsonUtility.ToJson(heightAdjustments.ToArray());
 
         StandaloneFileBrowser.SaveFilePanelAsync("Save File", 
                                                  "", 
@@ -196,16 +193,16 @@ public class GameManager : MonoBehaviour {
         camera.transform.rotation = new Quaternion();
     }
 
-    private String WriteObjectToJson(HeightAdjustment heightAdjustment, bool forFinalExport) {
-        /*String outString = (forFinalExport ? "					" : "") + "{\n" +
-                           (forFinalExport ? "					" : "") + "    \"adjustment\": " + heightAdjustment.adjustment + ",\n" +
-                           (forFinalExport ? "					" : "") + "    \"radius\": " + heightAdjustment.radius + ",\n" +
-                           (forFinalExport ? "					" : "") + "    \"pos\": [\n" +
-                           (forFinalExport ? "					" : "") + "        " + heightAdjustment.pos[0] + ",\n" +
-                           (forFinalExport ? "					" : "") + "        " + heightAdjustment.pos[1] + ",\n" +
-                           (forFinalExport ? "					" : "") + "        " + heightAdjustment.pos[2] + "\n" +
-                           (forFinalExport ? "					" : "") + "    ]\n" +
-                           (forFinalExport ? "					" : "") + "}";*/
+    private String WriteObjectToJson(HeightAdjustment heightAdjustment) {
+        /*String outString = "{\n" +
+                           "    \"adjustment\": " + heightAdjustment.adjustment + ",\n" +
+                           "    \"radius\": " + heightAdjustment.radius + ",\n" +
+                           "    \"pos\": [\n" +
+                           "        " + heightAdjustment.pos[0] + ",\n" +
+                           "        " + heightAdjustment.pos[1] + ",\n" +
+                           "        " + heightAdjustment.pos[2] + "\n" +
+                           "    ]\n" +
+                           "}";*/
         String outString = JsonUtility.ToJson(heightAdjustment, true);
         return outString;
     }
