@@ -25,9 +25,9 @@ public class GameManager : MonoBehaviour {
     public Material sphereMaterial;
 
     public Slider radiusSlider;
-    public Text radiusInputText;
+    public InputField radiusInputText;
     public Slider heightSlider;
-    public Text heightInputText;
+    public InputField heightInputText;
 
     public Text jsonDataForCurrentObject;
     
