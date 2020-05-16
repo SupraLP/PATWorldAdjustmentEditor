@@ -1,47 +1,11 @@
 				"heightAdjustments": [
 				    {
-					    "adjustment": -100,
-					    "radius": 100,
+					    "adjustment": -400,
+					    "radius": 1100,
 					    "pos": [
-					        0,
-					        -499,
-					        -12
-					    ]
-					},
-					{
-					    "adjustment": -100,
-					    "radius": 100,
-					    "pos": [
-					        82,
-					        -493,
-					        -12
-					    ]
-					},
-					{
-					    "adjustment": -100,
-					    "radius": 100,
-					    "pos": [
-					        144,
-					        -478,
-					        -13
-					    ]
-					},
-					{
-					    "adjustment": -100,
-					    "radius": 100,
-					    "pos": [
-					        205,
-					        -455,
-					        -11
-					    ]
-					},
-					{
-					    "adjustment": -100,
-					    "radius": 100,
-					    "pos": [
-					        277,
-					        -415,
-					        -4
+					        120,
+					        -483,
+					        39
 					    ]
 					}
 				]

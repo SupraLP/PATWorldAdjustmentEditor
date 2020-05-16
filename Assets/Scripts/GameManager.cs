@@ -232,6 +232,17 @@ public class GameManager : MonoBehaviour {
         }
     }
 
+    public void SetPlanetSizeFromText(String value) {
+        try {
+            worldSize = int.Parse(value);
+        } catch (Exception e) {
+            Debug.Log("The String was not valid:\n" + e);
+        }
+        diameter = worldSize * 2;
+        defaultRadius = (int)Math.Floor(diameter * 0.1f);
+        setWorldSize();
+    }
+
     public void OpenWorldFile() {
         StandaloneFileBrowser.OpenFilePanelAsync("Open World File", 
                                                  "", 
@@ -285,6 +296,8 @@ public class GameManager : MonoBehaviour {
         planet.transform.localScale = new Vector3(diameter, diameter, diameter);
         camera.transform.position = new Vector3(0, 0, (float)(-diameter*1.2));
         camera.transform.rotation = new Quaternion();
+        camera.transform.parent.position = new Vector3();
+        camera.transform.parent.rotation = new Quaternion();
     }
 
     private String WriteObjectToJson(HeightAdjustment heightAdjustment) {
