@@ -21,10 +21,10 @@ public class HeightAdjustment : MonoBehaviour {
     public int[] Pos {
         get {
             var position = transform.position;
-            return new[]{ (int)position.x, (int)position.y, (int)position.z};
+            return new[]{ (int)position.x, (int)position.z, (int)position.y};
         }
         set {
-            pos = value;
+            pos = new[]{ value[0], value[2], value[1]};
             transform.position = new Vector3(value[0], value[1], value[2]);
         }
     }
