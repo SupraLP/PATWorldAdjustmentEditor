@@ -41,6 +41,9 @@ public class GameManager : MonoBehaviour {
     public Image selectToolButton;
     public Image moveToolButton;
     public Image noToolButton;
+
+    public Image camModeButton0;
+    public Image camModeButton1;
     
 #pragma warning disable 108,114
     private GameObject camera;
@@ -48,6 +51,7 @@ public class GameManager : MonoBehaviour {
     private Vector3 lastMousePosition;
     private List<HeightAdjustment> heightAdjustments;
     private int tool = 0;
+    private int camMode = 1;
     private HeightAdjustment activeObject;
 
     private string loadedWorldFile;
@@ -60,6 +64,19 @@ public class GameManager : MonoBehaviour {
         setWorldSize();
         heightAdjustments = new List<HeightAdjustment>();
         SelectNoTool();
+        SelectCamMode1();
+    }
+
+    public void SelectCamMode0() {
+        camMode = 0;
+        camModeButton0.color = Color.cyan;
+        camModeButton1.color = Color.white;
+    }
+
+    public void SelectCamMode1() {
+        camMode = 1;
+        camModeButton0.color = Color.white;
+        camModeButton1.color = Color.cyan;
     }
 
     public void SelectNoTool() {
@@ -111,10 +128,15 @@ public class GameManager : MonoBehaviour {
     {
         if (!EventSystem.current.IsPointerOverGameObject()) {
             if (Input.GetAxis("Fire2") >= 0.1f || Input.GetAxis("Fire3") >= 0.1f || (tool == 0 && Input.GetAxis("Fire1") >= 0.1f)) {
-                camera.transform.parent.Rotate(new Vector3(
-                                                           lastMousePosition.y - Input.mousePosition.y, 
-                                                           Input.mousePosition.x - lastMousePosition.x, 
-                                                           Input.mousePosition.z - lastMousePosition.z), Space.Self);
+                if (camMode == 0) {
+                    camera.transform.parent.Rotate(new Vector3(
+                                                               lastMousePosition.y - Input.mousePosition.y, 
+                                                               Input.mousePosition.x - lastMousePosition.x, 
+                                                               Input.mousePosition.z - lastMousePosition.z), Space.Self);
+                } else {
+                    camera.transform.parent.RotateAround(Vector3.up, (float)((Input.mousePosition.x - lastMousePosition.x) * 0.01));
+                    camera.transform.parent.RotateAround(camera.transform.parent.right, (float)((lastMousePosition.y - Input.mousePosition.y) * 0.01));
+                }
             }
             lastMousePosition = Input.mousePosition;
         
