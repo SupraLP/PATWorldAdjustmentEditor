@@ -54,7 +54,7 @@ public class GameManager : MonoBehaviour {
     private int camMode = 1;
     private HeightAdjustment activeObject;
 
-    private string loadedWorldFile;
+    private SolarSystem loadedSolarSystem;
     
     // Start is called before the first frame update
     void Start() {
@@ -244,19 +244,18 @@ public class GameManager : MonoBehaviour {
     }
 
     public void OpenWorldFile() {
+        string loadedFile = "";
         StandaloneFileBrowser.OpenFilePanelAsync("Open World File", 
                                                  "", 
                                                  "", 
                                                  false,
                                                  paths => {
                                                      if (!string.IsNullOrEmpty(paths[0])) {
-                                                         loadedWorldFile = paths[0];
+                                                         loadedFile = paths[0];
                                                      }
                                                  });
-        var seperatedHeightAdjustments = loadedWorldFile.Substring(loadedWorldFile.IndexOf("\"heightAdjustments\": [", StringComparison.CurrentCulture), 
-                                                                   loadedWorldFile.IndexOf("			}\n        }\n    ]\n}", StringComparison.CurrentCulture) - 
-                                                                   loadedWorldFile.IndexOf("\"heightAdjustments\": [", StringComparison.CurrentCulture));
-        var heightAdjustmentArray = JsonUtility.FromJson<HeightAdjustment[]>(seperatedHeightAdjustments);
+        loadedSolarSystem = JsonUtility.FromJson<SolarSystem>(loadedFile);
+        var heightAdjustmentArray = loadedSolarSystem.planets[0].planet.heightAdjustments;
         openDialog.SetActive(true);
         var dialogResponse = openDialog.GetComponent<DialogBox>().CreateDialog();
         openDialog.SetActive(false);
