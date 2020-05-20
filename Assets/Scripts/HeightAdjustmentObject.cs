@@ -1,10 +1,9 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 [System.Serializable]
 public class HeightAdjustmentObject : MonoBehaviour {
     
-    private HeightAdjustment _heightAdjustment;
+    private HeightAdjustment _heightAdjustment = new HeightAdjustment();
     
     public float Adjustment {
         get { return _heightAdjustment.adjustment; }
@@ -24,12 +23,9 @@ public class HeightAdjustmentObject : MonoBehaviour {
         set {
             _heightAdjustment.pos = new[]{ value.x, value.z, value.y};
             Debug.Log(value);
+            Debug.Log(_heightAdjustment.pos[0] + " " + _heightAdjustment.pos[1] + " " + _heightAdjustment.pos[2]);
             transform.position = value;
         }
-    }
-
-    private void Start() {
-        _heightAdjustment = new HeightAdjustment();
     }
 
     public HeightAdjustment GetHeightAdjustment() {
@@ -40,6 +36,7 @@ public class HeightAdjustmentObject : MonoBehaviour {
         this._heightAdjustment = heightAdjustment;
         Pos = new Vector3(heightAdjustment.pos[0], heightAdjustment.pos[2], heightAdjustment.pos[1]);
         Radius = heightAdjustment.radius;
+        Adjustment = heightAdjustment.adjustment;
     }
     
     /*void Update() {

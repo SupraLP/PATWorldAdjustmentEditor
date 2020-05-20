@@ -151,7 +151,6 @@ public class GameManager : MonoBehaviour {
                     Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out var hit, Mathf.Infinity);
                     if (hit.collider.gameObject != null) {
                         var adjustment = Instantiate(radiusPrefab, hit.point, new Quaternion()).GetComponent<HeightAdjustmentObject>();
-                        adjustment.LoadHeightAdjustment(new HeightAdjustment());
                         adjustment.Pos = hit.point;
                         adjustment.Adjustment = defaultHeight;
                         adjustment.Radius = defaultRadius;
@@ -172,6 +171,7 @@ public class GameManager : MonoBehaviour {
                     Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out var hit, Mathf.Infinity);
                     try {
                         activeObject.Pos = hit.point;
+                        jsonDataForCurrentObject.text = WriteObjectToJson(activeObject);
                     } catch (Exception e) {
                         Debug.Log("" + e);
                     }
@@ -194,6 +194,7 @@ public class GameManager : MonoBehaviour {
         }
         activeObject = active;
         activeObject.GetComponent<MeshRenderer>().material = selectedMaterial;
+        jsonDataForCurrentObject.text = WriteObjectToJson(activeObject);
         SetRadiusForActiveObject(activeObject.Radius);
         SetHeightForActiveObject(activeObject.Adjustment);
     }
@@ -345,12 +346,12 @@ public class GameManager : MonoBehaviour {
 
     private String WriteObjectToJson(HeightAdjustmentObject heightAdjustmentObject) {
         /*String outString = "{\n" +
-                           "    \"adjustment\": " + heightAdjustment.adjustment + ",\n" +
-                           "    \"radius\": " + heightAdjustment.radius + ",\n" +
+                           "    \"adjustment\": " + heightAdjustmentObject.GetHeightAdjustment().adjustment + ",\n" +
+                           "    \"radius\": " + heightAdjustmentObject.GetHeightAdjustment().radius + ",\n" +
                            "    \"pos\": [\n" +
-                           "        " + heightAdjustment.pos[0] + ",\n" +
-                           "        " + heightAdjustment.pos[1] + ",\n" +
-                           "        " + heightAdjustment.pos[2] + "\n" +
+                           "        " + heightAdjustmentObject.GetHeightAdjustment().pos[0] + ",\n" +
+                           "        " + heightAdjustmentObject.GetHeightAdjustment().pos[1] + ",\n" +
+                           "        " + heightAdjustmentObject.GetHeightAdjustment().pos[2] + "\n" +
                            "    ]\n" +
                            "}";*/
         String outString = JsonUtility.ToJson(heightAdjustmentObject.GetHeightAdjustment(), true);
