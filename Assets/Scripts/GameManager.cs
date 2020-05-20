@@ -45,14 +45,16 @@ public class GameManager : MonoBehaviour {
     public Image camModeButton0;
     public Image camModeButton1;
     
+    private int dialogResponse = 0;
+    
 #pragma warning disable 108,114
     private GameObject camera;
 #pragma warning restore 108,114
     private Vector3 lastMousePosition;
-    private List<HeightAdjustment> heightAdjustments;
+    private List<HeightAdjustmentObject> heightAdjustments;
     private int tool = 0;
     private int camMode = 1;
-    private HeightAdjustment activeObject;
+    private HeightAdjustmentObject activeObject;
 
     private SolarSystem loadedSolarSystem;
     
@@ -62,7 +64,7 @@ public class GameManager : MonoBehaviour {
         diameter = worldSize * 2;
         defaultRadius = (int)Math.Floor(diameter * 0.1f);
         setWorldSize();
-        heightAdjustments = new List<HeightAdjustment>();
+        heightAdjustments = new List<HeightAdjustmentObject>();
         SelectNoTool();
         SelectCamMode1();
     }
@@ -145,17 +147,17 @@ public class GameManager : MonoBehaviour {
                     Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out var hit, Mathf.Infinity);
                     if (hit.collider.gameObject != null) {
                         GameObject newSphere = Instantiate(radiusPrefab, hit.point, new Quaternion());
-                        var adjustment = newSphere.GetComponent<HeightAdjustment>();
+                        var adjustment = newSphere.GetComponent<HeightAdjustmentObject>();
                         adjustment.Pos = new []{ (int)hit.point.x, (int)hit.point.y, (int)hit.point.z};
                         heightAdjustments.Add(adjustment);
-                        adjustment.adjustment = defaultHeight;
-                        adjustment.radius = defaultRadius;
+                        adjustment.Adjustment = defaultHeight;
+                        adjustment.Radius = defaultRadius;
                         SetActiveObject(adjustment);
                     }
                 } else if (tool == 2) {
                     Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out var hit, Mathf.Infinity);
                     try {
-                        SetActiveObject(hit.collider.gameObject.GetComponent<HeightAdjustment>());
+                        SetActiveObject(hit.collider.gameObject.GetComponent<HeightAdjustmentObject>());
                     } catch (Exception e) {
                         Debug.Log("" + e);
                     }
@@ -182,14 +184,14 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-    private void SetActiveObject(HeightAdjustment active) {
+    private void SetActiveObject(HeightAdjustmentObject active) {
         if (activeObject != null) {
             activeObject.GetComponent<MeshRenderer>().material = sphereMaterial;
         }
         activeObject = active;
         activeObject.GetComponent<MeshRenderer>().material = selectedMaterial;
-        SetRadiusForActiveObject(activeObject.radius);
-        SetHeightForActiveObject(activeObject.adjustment);
+        SetRadiusForActiveObject(activeObject.Radius);
+        SetHeightForActiveObject(activeObject.Adjustment);
     }
 
     private void SetRadiusForActiveObject(int value) {
@@ -201,7 +203,7 @@ public class GameManager : MonoBehaviour {
     }
 
     private void SetHeightForActiveObject(int value) {
-        activeObject.adjustment = value;
+        activeObject.Adjustment = value;
         jsonDataForCurrentObject.text = WriteObjectToJson(activeObject);
         heightSlider.SetValueWithoutNotify(value);
         heightInputText.text = value.ToString();
@@ -255,19 +257,50 @@ public class GameManager : MonoBehaviour {
                                                      }
                                                  });
         loadedSolarSystem = JsonUtility.FromJson<SolarSystem>(loadedFile);
+        Debug.Log(loadedFile);
+        Debug.Log(JsonUtility.ToJson(loadedSolarSystem, true));
         var heightAdjustmentArray = loadedSolarSystem.planets[0].planet.heightAdjustments;
-        openDialog.SetActive(true);
-        var dialogResponse = openDialog.GetComponent<DialogBox>().CreateDialog();
+        if (heightAdjustmentArray != null) {
+            openDialog.SetActive(true);
+        }
+    }
+
+    private void KeepLoadingWorld() {
         openDialog.SetActive(false);
+        var heightAdjustmentArray = loadedSolarSystem.planets[0].planet.heightAdjustments;
+        Debug.Log(JsonUtility.ToJson(heightAdjustmentArray, true));
         if (dialogResponse == 1) {
             foreach (var heightAdjustment in heightAdjustments) {
                 heightAdjustments.Remove(heightAdjustment);
                 Destroy(heightAdjustment.gameObject);
             }
-            heightAdjustments.AddRange(heightAdjustmentArray);
+            foreach (var heightAdjustment in heightAdjustmentArray) {
+                var heightAdjustmentObject = Instantiate(radiusPrefab).GetComponent<HeightAdjustmentObject>();
+                heightAdjustmentObject.LoadHeightAdjustment(heightAdjustment);
+                heightAdjustments.Add(heightAdjustmentObject);
+            }
         } else if (dialogResponse == 2) {
-            heightAdjustments.AddRange(heightAdjustmentArray);
+            foreach (var heightAdjustment in heightAdjustmentArray) {
+                var heightAdjustmentObject = Instantiate(radiusPrefab).GetComponent<HeightAdjustmentObject>();
+                heightAdjustmentObject.LoadHeightAdjustment(heightAdjustment);
+                heightAdjustments.Add(heightAdjustmentObject);
+            }
         }
+    }
+
+    public void ResponseOne() {
+        dialogResponse = 1;
+        KeepLoadingWorld();
+    }
+
+    public void ResponseTwo() {
+        dialogResponse = 2;
+        KeepLoadingWorld();
+    }
+
+    public void ResponseThree() {
+        dialogResponse = 3;
+        KeepLoadingWorld();
     }
 
     public void SaveInfoToFile() {
@@ -299,7 +332,7 @@ public class GameManager : MonoBehaviour {
         camera.transform.parent.rotation = new Quaternion();
     }
 
-    private String WriteObjectToJson(HeightAdjustment heightAdjustment) {
+    private String WriteObjectToJson(HeightAdjustmentObject heightAdjustmentObject) {
         /*String outString = "{\n" +
                            "    \"adjustment\": " + heightAdjustment.adjustment + ",\n" +
                            "    \"radius\": " + heightAdjustment.radius + ",\n" +
@@ -309,7 +342,7 @@ public class GameManager : MonoBehaviour {
                            "        " + heightAdjustment.pos[2] + "\n" +
                            "    ]\n" +
                            "}";*/
-        String outString = JsonUtility.ToJson(heightAdjustment, true);
+        String outString = JsonUtility.ToJson(heightAdjustmentObject.heightAdjustment, true);
         return outString;
     }
 }

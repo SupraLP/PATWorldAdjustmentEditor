@@ -1314,7 +1314,7 @@ MonoBehaviour:
   heightSlider: {fileID: 1584129112}
   heightInputText: {fileID: 43681190}
   jsonDataForCurrentObject: {fileID: 1630668285}
-  openDialog: {fileID: 0}
+  openDialog: {fileID: 2034150959}
   radiusPrefab: {fileID: 1059547259}
   defaultRadius: 100
   defaultHeight: 0
@@ -1550,8 +1550,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2034150963}
-        m_MethodName: responseOne
+      - m_Target: {fileID: 362435207}
+        m_MethodName: ResponseOne
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1992,8 +1992,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2034150963}
-        m_MethodName: responseTwo
+      - m_Target: {fileID: 362435207}
+        m_MethodName: ResponseTwo
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3968,8 +3968,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2034150963}
-        m_MethodName: responseThree
+      - m_Target: {fileID: 362435207}
+        m_MethodName: ResponseThree
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5466,7 +5466,6 @@ GameObject:
   - component: {fileID: 2034150960}
   - component: {fileID: 2034150962}
   - component: {fileID: 2034150961}
-  - component: {fileID: 2034150963}
   m_Layer: 5
   m_Name: OpenFileDialog
   m_TagString: Untagged
@@ -5535,18 +5534,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2034150959}
   m_CullTransparentMesh: 0
---- !u!114 &2034150963
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2034150959}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a91f1479391cdf94aa922a8cc28476e9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &2037421341
 GameObject:
   m_ObjectHideFlags: 0

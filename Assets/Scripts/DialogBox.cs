@@ -19,15 +19,15 @@ public class DialogBox : MonoBehaviour {
         }
     }
 
-    public void responseOne() {
+    public void ResponseOne() {
         response = 1;
     }
 
-    public void responseTwo() {
+    public void ResponseTwo() {
         response = 2;
     }
 
-    public void responseThree() {
+    public void ResponseThree() {
         response = 3;
     }
 }
