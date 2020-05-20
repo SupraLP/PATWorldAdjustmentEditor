@@ -1,4 +1,5 @@
-﻿public class LandingZones {
+﻿[System.Serializable]
+public class LandingZones {
 
     public string[] list;
     public string[] rules;

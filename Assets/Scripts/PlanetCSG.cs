@@ -1,4 +1,5 @@
-﻿public class PlanetCSG {
+﻿[System.Serializable]
+public class PlanetCSG {
     public string proj;
     public string spec;
     public float height;

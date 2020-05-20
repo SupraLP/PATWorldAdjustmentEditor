@@ -1,4 +1,5 @@
-﻿public class PlanetProperties {
+﻿[System.Serializable]
+public class PlanetProperties {
     public string name;
     public int mass;
     public int position_x;

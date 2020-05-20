@@ -1,4 +1,5 @@
-﻿public class MetalSpots {
+﻿[System.Serializable]
+public class MetalSpots {
 
     
 }

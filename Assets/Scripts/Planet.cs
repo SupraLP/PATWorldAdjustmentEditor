@@ -1,4 +1,5 @@
-﻿public class Planet {
+﻿[System.Serializable]
+public class Planet {
     public int seed;
     public int radius;
     public int heightRange;
