@@ -251,7 +251,7 @@ public class GameManager : MonoBehaviour {
                                                  false,
                                                  paths => {
                                                      if (!string.IsNullOrEmpty(paths[0])) {
-                                                         loadedFile = paths[0];
+                                                         loadedFile = File.ReadAllText(paths[0]);
                                                      }
                                                  });
         loadedSolarSystem = JsonUtility.FromJson<SolarSystem>(loadedFile);
