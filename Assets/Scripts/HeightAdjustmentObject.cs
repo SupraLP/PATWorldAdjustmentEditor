@@ -1,42 +1,49 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 [System.Serializable]
 public class HeightAdjustmentObject : MonoBehaviour {
     
-    public HeightAdjustment heightAdjustment;
+    private HeightAdjustment _heightAdjustment;
     
-    public int Adjustment {
-        get { return heightAdjustment.adjustment; }
-        set { heightAdjustment.adjustment = value; }
+    public float Adjustment {
+        get { return _heightAdjustment.adjustment; }
+        set { _heightAdjustment.adjustment = value; }
     }
     
     public int Radius {
         get { return (int)transform.localScale.x; }
         set {
             transform.localScale = new Vector3(value, value, value);
-            heightAdjustment.radius = value;
+            _heightAdjustment.radius = value;
         }
     }
 
-    public int[] Pos {
-        get {
-            var position = transform.position;
-            return new[]{ (int)position.x, (int)position.z, (int)position.y};
-        }
+    public Vector3 Pos {
+        get { return transform.position; }
         set {
-            heightAdjustment.pos = new[]{ value[0], value[2], value[1]};
-            transform.position = new Vector3(value[0], value[1], value[2]);
+            _heightAdjustment.pos = new[]{ value.x, value.z, value.y};
+            Debug.Log(value);
+            transform.position = value;
         }
+    }
+
+    private void Start() {
+        _heightAdjustment = new HeightAdjustment();
+    }
+
+    public HeightAdjustment GetHeightAdjustment() {
+        return _heightAdjustment;
     }
 
     public void LoadHeightAdjustment(HeightAdjustment heightAdjustment) {
-        this.heightAdjustment = heightAdjustment;
-        Pos = heightAdjustment.pos;
+        this._heightAdjustment = heightAdjustment;
+        Pos = new Vector3(heightAdjustment.pos[0], heightAdjustment.pos[2], heightAdjustment.pos[1]);
         Radius = heightAdjustment.radius;
     }
     
-    void Update() {
+    /*void Update() {
         var camdir = Camera.main.transform.up;
         Debug.DrawRay(transform.position, new Vector3(camdir.x * Adjustment, camdir.y * Adjustment, camdir.z * Adjustment), Color.red, 0.1f);
-    }
+    }*/
 }
