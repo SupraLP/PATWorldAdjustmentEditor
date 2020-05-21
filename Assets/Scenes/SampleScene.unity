@@ -1766,6 +1766,7 @@ MonoBehaviour:
   adjustmentYInput: {fileID: 1325726059}
   adjustmentZInput: {fileID: 197215124}
   jsonDataForCurrentObject: {fileID: 1630668285}
+  planetSizeInput: {fileID: 1007731538}
   currentSystemText: {fileID: 1316573709}
   currentPlanetText: {fileID: 1602940785}
   openDialog: {fileID: 2034150959}

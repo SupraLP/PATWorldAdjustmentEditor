@@ -27,12 +27,17 @@ public class GameManager : MonoBehaviour {
     [Header("Adjustment Edit UI")]
     public Slider radiusSlider;
     public InputField radiusInputText;
+    
     public Slider heightSlider;
     public InputField heightInputText;
+    
     public InputField adjustmentXInput;
     public InputField adjustmentYInput;
     public InputField adjustmentZInput;
+    
     public Text jsonDataForCurrentObject;
+    
+    public InputField planetSizeInput;
     
     [Header("Various UI elements")]
     public InputField currentSystemText;
@@ -351,6 +356,8 @@ public class GameManager : MonoBehaviour {
         // set new planet
         activePlanet = planet;
         currentPlanetText.text = activePlanet.name;
+        planetSizeInput.text = activePlanet.planet.radius.ToString();
+        
         var heightAdjustmentArray = loadedSolarSystem.planets[planetId].planet.heightAdjustments;
         Debug.Log("Setting new height Adjustments:\n" + JsonUtility.ToJson(heightAdjustmentArray, true));
         foreach (var heightAdjustment in heightAdjustmentArray) {
@@ -358,6 +365,7 @@ public class GameManager : MonoBehaviour {
             heightAdjustmentObject.LoadHeightAdjustment(heightAdjustment);
             heightAdjustments.Add(heightAdjustmentObject);
         }
+        
         diameter = activePlanet.planet.radius * 2;
         defaultRadius = (int)Math.Floor(diameter * 0.1f);
         setWorldSize();
