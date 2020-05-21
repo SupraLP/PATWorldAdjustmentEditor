@@ -15,30 +15,30 @@ using Slider = UnityEngine.UI.Slider;
 
 public class GameManager : MonoBehaviour {
     
+    [Header("File UI")]
     public Button saveWorldFile;
-
-    public int worldSize = 500; // overwritten by file
-    private int diameter;
-
+    
+    [Header("Planet and adjustments")]
     public GameObject planet;
+    public GameObject adjustmentObjectPrefab;
     public Material selectedMaterial;
     public Material sphereMaterial;
-
+    
+    [Header("Adjustment Edit UI")]
     public Slider radiusSlider;
     public InputField radiusInputText;
     public Slider heightSlider;
     public InputField heightInputText;
-
+    public InputField adjustmentXInput;
+    public InputField adjustmentYInput;
+    public InputField adjustmentZInput;
     public Text jsonDataForCurrentObject;
     
-    public Text currentSystemText;
-    public Text currentPlanetText;
+    [Header("Various UI elements")]
+    public InputField currentSystemText;
+    public InputField currentPlanetText;
 
     public GameObject openDialog;
-    public GameObject radiusPrefab;
-    
-    public int defaultRadius;
-    public float defaultHeight = 0;
 
     public Image placeToolButton;
     public Image selectToolButton;
@@ -47,8 +47,18 @@ public class GameManager : MonoBehaviour {
 
     public Image camModeButton0;
     public Image camModeButton1;
+
+    public RectTransform planetContainer;
+    public GameObject planetButtonPrefab;
     
-    private int dialogResponse = 0;
+    [Header("Default Values and Settings (Get overwritten during runtime)")]
+    public int defaultRadius;
+    public float defaultHeight = 0;
+    
+    public int worldRadius = 500;
+    public int diameter;
+    
+    private int dialogResponse = 1;
     
 #pragma warning disable 108,114
     private GameObject camera;
@@ -58,19 +68,28 @@ public class GameManager : MonoBehaviour {
     private int tool = 0;
     private int camMode = 1;
     private HeightAdjustmentObject activeObject;
+    private PlanetProperties activePlanet;
+
+    private List<GameObject> planetButtons = new List<GameObject>();
 
     private SolarSystem loadedSolarSystem;
     
     // Start is called before the first frame update
     void Start() {
         camera = Camera.main.gameObject;
-        diameter = worldSize * 2;
+        diameter = worldRadius * 2;
         defaultRadius = (int)Math.Floor(diameter * 0.1f);
         setWorldSize();
         heightAdjustments = new List<HeightAdjustmentObject>();
         SelectNoTool();
         SelectCamMode1();
-        loadedSolarSystem = new SolarSystem();
+        
+        loadedSolarSystem = JsonUtility.FromJson<SolarSystem>(File.ReadAllText(Application.dataPath + "/sampleSystem.pas"));
+        LoadSolarSystem();
+        
+        adjustmentXInput.onValueChanged.AddListener(delegate(string input) { activeObject.Pos = new Vector3(float.Parse(input), activeObject.Pos.y, activeObject.Pos.z); });
+        adjustmentYInput.onValueChanged.AddListener(delegate(string input) { activeObject.Pos = new Vector3(activeObject.Pos.x, float.Parse(input), activeObject.Pos.z); });
+        adjustmentZInput.onValueChanged.AddListener(delegate(string input) { activeObject.Pos = new Vector3(activeObject.Pos.x, activeObject.Pos.y, float.Parse(input)); });
     }
 
     public void SelectCamMode0() {
@@ -150,7 +169,7 @@ public class GameManager : MonoBehaviour {
                 if (tool == 1) {
                     Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out var hit, Mathf.Infinity);
                     if (hit.collider.gameObject != null) {
-                        var adjustment = Instantiate(radiusPrefab, hit.point, new Quaternion()).GetComponent<HeightAdjustmentObject>();
+                        var adjustment = Instantiate(adjustmentObjectPrefab, hit.point, new Quaternion()).GetComponent<HeightAdjustmentObject>();
                         adjustment.Pos = hit.point;
                         adjustment.Adjustment = defaultHeight;
                         adjustment.Radius = defaultRadius;
@@ -197,6 +216,9 @@ public class GameManager : MonoBehaviour {
         jsonDataForCurrentObject.text = WriteObjectToJson(activeObject);
         SetRadiusForActiveObject(activeObject.Radius);
         SetHeightForActiveObject(activeObject.Adjustment);
+        adjustmentXInput.text = activeObject.Pos.x.ToString();
+        adjustmentYInput.text = activeObject.Pos.y.ToString();
+        adjustmentZInput.text = activeObject.Pos.z.ToString();
     }
 
     private void SetRadiusForActiveObject(int value) {
@@ -241,16 +263,16 @@ public class GameManager : MonoBehaviour {
 
     public void SetPlanetSizeFromText(String value) {
         try {
-            worldSize = int.Parse(value);
+            worldRadius = int.Parse(value);
         } catch (Exception e) {
             Debug.Log("The String was not valid:\n" + e);
         }
-        diameter = worldSize * 2;
+        diameter = worldRadius * 2;
         defaultRadius = (int)Math.Floor(diameter * 0.1f);
         setWorldSize();
     }
 
-    public void OpenWorldFile() {
+    public void OpenSolarSystemFile() {
         string loadedFile = "";
         StandaloneFileBrowser.OpenFilePanelAsync("Open World File", 
                                                  "", 
@@ -261,53 +283,94 @@ public class GameManager : MonoBehaviour {
                                                          loadedFile = File.ReadAllText(paths[0]);
                                                      }
                                                  });
-        loadedSolarSystem = JsonUtility.FromJson<SolarSystem>(loadedFile);
-        Debug.Log(loadedFile);
-        Debug.Log(JsonUtility.ToJson(loadedSolarSystem, true));
-        var heightAdjustmentArray = loadedSolarSystem.planets[0].planet.heightAdjustments;
-        if (heightAdjustmentArray != null) {
+        loadedSolarSystem = ValidateSolarSystem(loadedFile);
+        if (loadedSolarSystem != null) {
             openDialog.SetActive(true);
         }
     }
 
-    private void KeepLoadingWorld() {
-        openDialog.SetActive(false);
-        var heightAdjustmentArray = loadedSolarSystem.planets[0].planet.heightAdjustments;
-        Debug.Log(JsonUtility.ToJson(heightAdjustmentArray, true));
-        currentSystemText.text = loadedSolarSystem.name;
-        currentPlanetText.text = loadedSolarSystem.planets[0].name;
-        if (dialogResponse == 1) {
-            foreach (var heightAdjustment in heightAdjustments) {
-                heightAdjustments.Remove(heightAdjustment);
-                Destroy(heightAdjustment.gameObject);
-            }
-            foreach (var heightAdjustment in heightAdjustmentArray) {
-                var heightAdjustmentObject = Instantiate(radiusPrefab).GetComponent<HeightAdjustmentObject>();
-                heightAdjustmentObject.LoadHeightAdjustment(heightAdjustment);
-                heightAdjustments.Add(heightAdjustmentObject);
-            }
-        } else if (dialogResponse == 2) {
-            foreach (var heightAdjustment in heightAdjustmentArray) {
-                var heightAdjustmentObject = Instantiate(radiusPrefab).GetComponent<HeightAdjustmentObject>();
-                heightAdjustmentObject.LoadHeightAdjustment(heightAdjustment);
-                heightAdjustments.Add(heightAdjustmentObject);
-            }
+    private SolarSystem ValidateSolarSystem(string jsonString) {
+        try {
+            var tempSolarSystem = JsonUtility.FromJson<SolarSystem>(jsonString);
+            Debug.Log("Json File Loaded:\n" + jsonString);
+            return tempSolarSystem;
+        } catch (Exception e) {
+            Debug.Log(e);
+            return null;
         }
+    }
+
+    private void LoadSolarSystem() {
+        openDialog.SetActive(false);
+        
+        if (dialogResponse == 1) {
+            currentSystemText.text = loadedSolarSystem.name;
+            foreach (var planetButton in planetButtons) {
+                Destroy(planetButton);
+            }
+            for (int i = 0; i < loadedSolarSystem.planets.Length; i++) {
+                var planetButton = Instantiate(planetButtonPrefab, planetContainer);
+                planetButton.GetComponentInChildren<Text>().text = loadedSolarSystem.planets[i].name;
+                planetButton.GetComponent<RectTransform>().anchoredPosition = new Vector3(0, -4 - 34*i);
+                var i1 = i;
+                planetButton.GetComponent<Button>().onClick.AddListener(delegate { SelectPlanet(loadedSolarSystem.planets[i1], i1); }) ;
+                planetButtons.Add(planetButton);
+            }
+            planetContainer.sizeDelta = new Vector2(planetContainer.sizeDelta.x, 4 + loadedSolarSystem.planets.Length * 34);
+            
+            SelectPlanet(loadedSolarSystem.planets[0], 0);
+        }
+
+        dialogResponse = 0;
+    }
+
+    private void SelectPlanet(PlanetProperties planet, int planetId) {
+        // set UI button color for inactive / active button
+        foreach (var planetButton2 in planetButtons) {
+            planetButton2.GetComponent<Image>().color = planetButtonPrefab.GetComponent<Image>().color;
+            planetButton2.GetComponentInChildren<Text>().color = Color.white;
+        }
+        planetButtons[planetId].GetComponent<Image>().color = Color.cyan;
+        planetButtons[planetId].GetComponentInChildren<Text>().color = Color.black;
+        
+        // transfer currently loaded data into json objects
+        if (activePlanet != null) {
+            List<HeightAdjustment> heightAdjustmentList = new List<HeightAdjustment>();
+            foreach (var heightAdjustment in heightAdjustments) {
+                heightAdjustmentList.Add(heightAdjustment.GetHeightAdjustment());
+            }
+            activePlanet.planet.heightAdjustments = heightAdjustmentList.ToArray();
+        }
+        
+        //delete current objects
+        foreach (var heightAdjustment in heightAdjustments) {
+            Destroy(heightAdjustment.gameObject);
+        }
+        heightAdjustments.Clear();
+        
+        // set new planet
+        activePlanet = planet;
+        currentPlanetText.text = activePlanet.name;
+        var heightAdjustmentArray = loadedSolarSystem.planets[planetId].planet.heightAdjustments;
+        Debug.Log("Setting new height Adjustments:\n" + JsonUtility.ToJson(heightAdjustmentArray, true));
+        foreach (var heightAdjustment in heightAdjustmentArray) {
+            var heightAdjustmentObject = Instantiate(adjustmentObjectPrefab).GetComponent<HeightAdjustmentObject>();
+            heightAdjustmentObject.LoadHeightAdjustment(heightAdjustment);
+            heightAdjustments.Add(heightAdjustmentObject);
+        }
+        diameter = activePlanet.planet.radius * 2;
+        defaultRadius = (int)Math.Floor(diameter * 0.1f);
+        setWorldSize();
     }
 
     public void ResponseOne() {
         dialogResponse = 1;
-        KeepLoadingWorld();
+        LoadSolarSystem();
     }
 
     public void ResponseTwo() {
         dialogResponse = 2;
-        KeepLoadingWorld();
-    }
-
-    public void ResponseThree() {
-        dialogResponse = 3;
-        KeepLoadingWorld();
+        LoadSolarSystem();
     }
 
     public void SaveInfoToFile() {
@@ -338,10 +401,9 @@ public class GameManager : MonoBehaviour {
 
     public void setWorldSize() {
         planet.transform.localScale = new Vector3(diameter, diameter, diameter);
-        camera.transform.position = new Vector3(0, 0, (float)(-diameter*1.2));
         camera.transform.rotation = new Quaternion();
-        camera.transform.parent.position = new Vector3();
         camera.transform.parent.rotation = new Quaternion();
+        camera.transform.position = new Vector3(0, 0, (float)(-diameter*1.2));
     }
 
     private String WriteObjectToJson(HeightAdjustmentObject heightAdjustmentObject) {

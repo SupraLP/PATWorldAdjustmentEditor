@@ -16,5 +16,5 @@ public class Planet {
     public int numArmies = 2;
     public int landingZonesPerArmy = 0;
     public int landingZoneSize = 0;
-    public HeightAdjustment[] heightAdjustments;
+    public HeightAdjustment[] heightAdjustments = new HeightAdjustment[]{};
 }
