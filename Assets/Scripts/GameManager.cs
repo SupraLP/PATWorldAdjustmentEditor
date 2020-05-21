@@ -83,8 +83,8 @@ public class GameManager : MonoBehaviour {
         heightAdjustments = new List<HeightAdjustmentObject>();
         SelectNoTool();
         SelectCamMode1();
-        
-        loadedSolarSystem = JsonUtility.FromJson<SolarSystem>(File.ReadAllText(Application.dataPath + "/sampleSystem.pas"));
+
+        loadedSolarSystem = JsonUtility.FromJson<SolarSystem>(Resources.Load<TextAsset>("sampleSystem").text); //File.ReadAllText(Application.dataPath + "/Resources/sampleSystem.pas"));
         LoadSolarSystem();
         
         adjustmentXInput.onValueChanged.AddListener(delegate(string input) { activeObject.Pos = new Vector3(float.Parse(input), activeObject.Pos.y, activeObject.Pos.z); });
